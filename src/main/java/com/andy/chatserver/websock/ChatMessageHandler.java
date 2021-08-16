@@ -37,6 +37,7 @@ public class ChatMessageHandler  extends TextWebSocketHandler{
 
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) {
+		
 		TextMessage textMessage = new TextMessage("Welcome to chat room !");
 		try {
 			session.sendMessage(textMessage);
