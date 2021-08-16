@@ -35,20 +35,31 @@ public class ChatMessageHandler  extends TextWebSocketHandler{
 	}
 	
 
+	@Override
+	public void afterConnectionEstablished(WebSocketSession session) {
+		TextMessage textMessage = new TextMessage("Welcome to chat room !");
+		try {
+			session.sendMessage(textMessage);
+		} catch (IOException e) {
+			logger.error("Error when sending welcome message", e);
+		}
+	}
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         
+    	
     	String payload = message.getPayload();
     	
     	if(payload.trim().isEmpty())
     		return;
-        
-    	JSONObject jsonObject = new JSONObject(payload);
     	
-    	if(jsonObject.has("roomID")) {
-    		
+    	JSONObject jsonObject = null;
+    			
+    	try {
+    		jsonObject = new JSONObject(payload);
     		String roomID = jsonObject.getString("roomID");
+    		payload = jsonObject.getString("message");
     		
     		if(!inverseChatRooms.containsKey(session.getId()))
     			inverseChatRooms.put(session.getId(), roomID);
@@ -61,6 +72,11 @@ public class ChatMessageHandler  extends TextWebSocketHandler{
     			chatRooms.get(roomID).add(session);
     		
     		multicast(roomID, payload, session);
+    	}
+    	catch(Exception ex) {
+    		TextMessage msg = new TextMessage("Invalid message format !");
+    		session.sendMessage(msg);
+    		return;
     	}
 
     }
